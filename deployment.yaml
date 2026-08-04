@@ -14,8 +14,13 @@ spec:
     spec:
       containers:
         - name: eventpulse
-          image: eventpulse-ai:latest
-          imagePullPolicy: IfNotPresent
+
+          # ✅ CHANGE 1
+          image: snehatiwari34/eventpulse-ai:latest
+
+          # ✅ CHANGE 2
+          imagePullPolicy: Always
+
           ports:
             - containerPort: 80
 ---
@@ -30,4 +35,6 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-  type: LoadBalancer
+
+  # ✅ CHANGE 3
+  type: NodePort
