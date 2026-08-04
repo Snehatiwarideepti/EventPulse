@@ -1,0 +1,32 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate files exist
+        run: |
+          test -f index.html
+          test -f styles.css
+          test -f app.js
+          test -f Dockerfile
+
+      - name: Build Docker image
+        run: docker build -t eventpulse-ai:latest .
+
+      - name: Run container smoke test
+        run: |
+          docker run -d --name eventpulse-test -p 8080:80 eventpulse-ai:latest
+          sleep 5
+          curl -f http://127.0.0.1:8080/ | head
+          docker rm -f eventpulse-test

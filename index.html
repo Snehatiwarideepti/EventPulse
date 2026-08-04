@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventPulse AI | Smart Event Portal (Auth System)</title>
+  <!-- SEO & Meta -->
+  <meta name="description" content="Smart Event Management Portal featuring strict authentication-based user and admin portal access, AI matchmaking, live engagement, and QR ticketing." />
+  <meta name="theme-color" content="#0A0D14" />
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="dark-theme">
+  <!-- Application Layout -->
+  <div id="app" class="app-container">
+    
+    <!-- Top Role Banner (Visible when logged in as Admin) -->
+    <div id="adminModeBanner" class="admin-banner" style="display: none;">
+      <div class="admin-banner-content">
+        <span><i data-lucide="shield-check"></i> <strong>AUTHENTICATED ADMIN PORTAL</strong> — Logged in as Admin: <span id="adminBannerEmail">Sneha</span></span>
+        <button class="btn-banner-switch" id="bannerLogoutBtn"><i data-lucide="log-out"></i> Log Out</button>
+      </div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="navbar">
+      <div class="nav-brand" id="brandLogo">
+        <div class="brand-icon">
+          <i data-lucide="zap"></i>
+          <span class="live-dot"></span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">EventPulse<span class="brand-badge">AI</span></span>
+          <span class="brand-sub">Smart Event Portal</span>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="nav-links">
+        <button class="nav-tab active" data-tab="discover">
+          <i data-lucide="compass"></i>
+          <span>Discover Events</span>
+        </button>
+        <button class="nav-tab" data-tab="livehub">
+          <i data-lucide="radio"></i>
+          <span>Live Hub</span>
+          <span class="pulse-chip">Live</span>
+        </button>
+        <button class="nav-tab" data-tab="mypasses">
+          <i data-lucide="ticket"></i>
+          <span>My Passes</span>
+          <span class="badge-count" id="myPassesCount">0</span>
+        </button>
+        <button class="nav-tab admin-only-tab" data-tab="dashboard" style="display: none;">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Admin Portal</span>
+        </button>
+      </nav>
+
+      <!-- Nav Actions (Auth Aware) -->
+      <div class="nav-actions">
+        <button class="btn-icon" id="notificationsBtn" title="Notifications">
+          <i data-lucide="bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+
+        <button class="btn-primary-gradient admin-only-action" id="createEventBtn" style="display: none;">
+          <i data-lucide="plus"></i>
+          <span>Host Event</span>
+        </button>
+
+        <!-- Logged Out Auth Controls -->
+        <div id="loggedOutActions" class="auth-btn-group" style="display: flex; gap: 0.5rem;">
+          <button class="btn-secondary" id="loginNavBtn">
+            <i data-lucide="log-in"></i> Log In
+          </button>
+          <button class="btn-primary-gradient" id="signUpNavBtn">
+            <span>Sign Up</span>
+          </button>
+        </div>
+
+        <!-- Logged In User Profile Menu -->
+        <div id="loggedInActions" class="user-profile-wrapper" style="display: none;">
+          <div class="user-profile-badge" id="userProfileBtn">
+            <img id="userAvatarImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="User Profile" />
+            <div class="profile-info">
+              <span class="profile-name" id="userNameLabel">User</span>
+              <span class="profile-role-tag" id="profileRoleTag">Attendee</span>
+            </div>
+            <i data-lucide="chevron-down" style="width: 14px; height: 14px; margin-left: 0.2rem; color: var(--text-muted);"></i>
+          </div>
+
+          <!-- Dropdown Menu -->
+          <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header">
+              <strong id="dropdownName">User</strong>
+              <span id="dropdownEmail">user@example.com</span>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" id="dropdownMyPassesBtn"><i data-lucide="ticket"></i> My Tickets & Passes</button>
+            <button class="dropdown-item admin-only-dropdown" id="dropdownAdminDashBtn" style="display: none;"><i data-lucide="shield"></i> Admin Control Center</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item logout-item" id="logoutBtn"><i data-lucide="log-out"></i> Log Out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- TAB 1: DISCOVER EVENTS VIEW -->
+      <section id="discoverView" class="tab-view active">
+        <!-- Hero Section -->
+        <div class="hero-banner">
+          <div class="hero-glow hero-glow-1"></div>
+          <div class="hero-glow hero-glow-2"></div>
+          
+          <div class="hero-content">
+            <div class="hero-pill">
+              <i data-lucide="shield-check"></i>
+              <span id="heroRoleTitle">Smart Event Discovery</span>
+            </div>
+            <h1 class="hero-title">Experience the Future of <span class="gradient-text">Smart Events</span></h1>
+            <p class="hero-subtitle">Discover high-impact AI summits, design hackathons, and immersive conferences. Powered by real-time agenda tracking and digital QR passes.</p>
+            
+            <!-- AI Natural Prompt Bar -->
+            <div class="ai-search-box">
+              <div class="ai-input-wrapper">
+                <i data-lucide="bot" class="ai-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search events or ask AI: 'Find AI summits in San Francisco this month'..." />
+                <button class="btn-ai-submit" id="aiSearchSubmitBtn">
+                  <i data-lucide="arrow-right"></i>
+                </button>
+              </div>
+              <div class="ai-tags">
+                <span class="ai-tag-label"><i data-lucide="zap"></i> Try asking:</span>
+                <button class="ai-tag-btn" data-query="AI & Robotics">🤖 AI & Robotics</button>
+                <button class="ai-tag-btn" data-query="UI/UX Design Systems">🎨 Design Systems</button>
+                <button class="ai-tag-btn" data-query="Web3 Summit">⚡ Web3 & Cloud</button>
+                <button class="ai-tag-btn" data-query="Free Virtual Events">🌐 Virtual Passes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Control Bar -->
+        <div class="filter-bar-container">
+          <div class="filter-controls">
+            <div class="category-pills" id="categoryPills">
+              <button class="pill-btn active" data-category="all">All Events</button>
+              <button class="pill-btn" data-category="Tech & AI">Tech & AI</button>
+              <button class="pill-btn" data-category="Design">Design</button>
+              <button class="pill-btn" data-category="Business">Business</button>
+              <button class="pill-btn" data-category="Web3 & Crypto">Web3</button>
+              <button class="pill-btn" data-category="Entertainment">Music & Arts</button>
+            </div>
+
+            <div class="format-toggles">
+              <button class="format-btn active" data-format="all">All Formats</button>
+              <button class="format-btn" data-format="In-Person"><i data-lucide="map-pin"></i> In-Person</button>
+              <button class="format-btn" data-format="Virtual"><i data-lucide="video"></i> Virtual</button>
+              <button class="format-btn" data-format="Hybrid"><i data-lucide="layers"></i> Hybrid</button>
+            </div>
+          </div>
+
+          <div class="results-meta">
+            <span id="resultsCount">Showing curated events</span>
+            <div class="sort-wrapper">
+              <label for="sortSelect">Sort by:</label>
+              <select id="sortSelect" class="sort-select">
+                <option value="upcoming">Date: Upcoming First</option>
+                <option value="popular">Popularity: Highest First</option>
+                <option value="price-low">Price: Low to High</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events Grid -->
+        <div class="events-grid" id="eventsGrid">
+          <!-- Event Cards populated dynamically by app.js -->
+        </div>
+      </section>
+
+      <!-- TAB 2: LIVE EVENT HUB & AGENDA VIEW -->
+      <section id="livehubView" class="tab-view">
+        <div class="livehub-header">
+          <div class="livehub-title-block">
+            <span class="live-pill"><span class="pulse-dot"></span> LIVE BROADCAST & SESSION HUB</span>
+            <h2>Global Tech & AI Summit 2026</h2>
+            <p><i data-lucide="map-pin"></i> Moscone Center, San Francisco & Virtual Stream</p>
+          </div>
+
+          <div class="livehub-stats">
+            <div class="stat-mini">
+              <span class="stat-num">3,420</span>
+              <span class="stat-lbl">Live Viewers</span>
+            </div>
+            <div class="stat-mini">
+              <span class="stat-num">12</span>
+              <span class="stat-lbl">Active Tracks</span>
+            </div>
+            <div class="stat-mini">
+              <span class="stat-num">98%</span>
+              <span class="stat-lbl">Satisfaction</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="livehub-grid">
+          <div class="agenda-column">
+            <div class="live-stage-card">
+              <div class="stage-screen">
+                <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1000&auto=format&fit=crop&q=80" alt="Live Stream Stage" class="stage-bg" />
+                <div class="stage-overlay">
+                  <div class="stage-top">
+                    <span class="badge-stage"><i data-lucide="video"></i> MAIN STAGE - LIVE</span>
+                    <span class="viewer-tag"><i data-lucide="eye"></i> 1.8k Watching</span>
+                  </div>
+                  <div class="stage-center">
+                    <button class="play-btn" id="playStageBtn">
+                      <i data-lucide="play"></i>
+                    </button>
+                    <h3>Keynote: Scaling Generative Intelligence & Autonomous Agents</h3>
+                    <p>Featuring Dr. Elena Vance (Head of AI Systems)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="agenda-timeline-wrapper">
+              <div class="timeline-header">
+                <h3><i data-lucide="calendar"></i> Session Agenda Timeline</h3>
+                <div class="track-pills">
+                  <button class="track-btn active" data-track="all">All Tracks</button>
+                  <button class="track-btn" data-track="AI & Data">AI & Data</button>
+                  <button class="track-btn" data-track="Product Design">Design</button>
+                  <button class="track-btn" data-track="Cloud Architecture">Cloud</button>
+                </div>
+              </div>
+
+              <div class="agenda-list" id="agendaList">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <div class="interaction-column">
+            <div class="interaction-tabs">
+              <button class="int-tab active" data-inttab="qa">
+                <i data-lucide="message-square"></i> Q&A Feed
+              </button>
+              <button class="int-tab" data-inttab="poll">
+                <i data-lucide="bar-chart-2"></i> Live Polls
+              </button>
+            </div>
+
+            <div id="qaPanel" class="int-panel active">
+              <div class="ask-box">
+                <input type="text" id="qaInput" placeholder="Ask a question for the speaker..." />
+                <button class="btn-send-qa" id="sendQaBtn"><i data-lucide="send"></i> Ask</button>
+              </div>
+
+              <div class="qa-feed" id="qaFeed">
+                <!-- Q&A Items populated dynamically -->
+              </div>
+            </div>
+
+            <div id="pollPanel" class="int-panel">
+              <div class="poll-card" id="pollCard">
+                <div class="poll-header">
+                  <span class="poll-badge">ACTIVE POLL</span>
+                  <h4>What is your team's biggest challenge in deploying AI in 2026?</h4>
+                </div>
+                <div class="poll-options" id="pollOptions">
+                  <!-- Poll options populated dynamically -->
+                </div>
+                <div class="poll-footer">
+                  <span id="totalVotesCount">1,240 votes cast</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: MY PASSES & BOOKMARKS VIEW -->
+      <section id="mypassesView" class="tab-view">
+        <div class="section-header">
+          <div>
+            <h2>My Digital Event Passes & Bookmarks</h2>
+            <p>Access your QR passes, calendar schedules, and saved sessions.</p>
+          </div>
+          <div class="passes-tabs">
+            <button class="subtab-btn active" id="btnBookedPasses">Booked Passes (<span id="passesCountBadge">0</span>)</button>
+            <button class="subtab-btn" id="btnSavedEvents">Saved Events (<span id="bookmarksCountBadge">0</span>)</button>
+          </div>
+        </div>
+
+        <div class="passes-grid" id="passesContainer">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- TAB 4: ORGANIZER / ADMIN DASHBOARD VIEW -->
+      <section id="dashboardView" class="tab-view">
+        <div class="dashboard-header">
+          <div>
+            <h2><i data-lucide="shield-check" style="color: var(--accent-pink);"></i> Administrator Command Center</h2>
+            <p>Platform metrics, revenue analytics, event CRUD operations, and attendee gate roster.</p>
+          </div>
+          <div class="dashboard-actions">
+            <button class="btn-secondary" id="exportDataBtn">
+              <i data-lucide="download"></i> Export Reports
+            </button>
+            <button class="btn-primary-gradient" id="dashCreateEventBtn">
+              <i data-lucide="plus-circle"></i> Create New Event
+            </button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon icon-purple"><i data-lucide="dollar-sign"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Platform Revenue</span>
+              <span class="kpi-value" id="kpiRevenue">$142,850</span>
+              <span class="kpi-trend trend-up"><i data-lucide="trending-up"></i> +18.4% this month</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon icon-cyan"><i data-lucide="ticket"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Tickets Issued</span>
+              <span class="kpi-value" id="kpiTickets">1,845</span>
+              <span class="kpi-trend trend-up"><i data-lucide="trending-up"></i> +12% target</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon icon-green"><i data-lucide="users"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Gate Check-in Rate</span>
+              <span class="kpi-value" id="kpiCheckin">94.2%</span>
+              <span class="kpi-trend trend-up"><i data-lucide="trending-up"></i> High engagement</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon icon-pink"><i data-lucide="calendar"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Active Published Events</span>
+              <span class="kpi-value" id="kpiActiveEvents">6 Events</span>
+              <span class="kpi-trend trend-neutral"><i data-lucide="check"></i> All operational</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3><i data-lucide="bar-chart"></i> Platform Ticket Sales Overview</h3>
+              <span class="chart-tag">2026 YTD</span>
+            </div>
+            <div class="svg-chart-container" id="barChartContainer">
+              <!-- SVG Bar Chart -->
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3><i data-lucide="pie-chart"></i> Category Distribution</h3>
+              <span class="chart-tag">By Interest</span>
+            </div>
+            <div class="svg-chart-container" id="donutChartContainer">
+              <!-- SVG Donut Chart -->
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">
+              <h3><i data-lucide="user-check"></i> Admin Attendee Roster & Gate Check-In</h3>
+              <p>Manage attendee check-ins, ticket verification, and status toggles.</p>
+            </div>
+            <div class="table-search">
+              <i data-lucide="search"></i>
+              <input type="text" id="rosterSearchInput" placeholder="Search attendee name or ticket code..." />
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="roster-table">
+              <thead>
+                <tr>
+                  <th>Attendee</th>
+                  <th>Event Name</th>
+                  <th>Ticket Tier</th>
+                  <th>QR Ticket ID</th>
+                  <th>Check-In Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="rosterTableBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="brand-icon">
+            <i data-lucide="zap"></i>
+          </div>
+          <span class="brand-title">EventPulse AI</span>
+          <p>The next-generation smart portal for discovering, hosting, and managing high-impact events.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>User Portal</h4>
+            <a href="#">Discover Events</a>
+            <a href="#">Live Broadcast</a>
+            <a href="#">My Digital QR Passes</a>
+            <a href="#">Saved Bookmarks</a>
+          </div>
+          <div class="footer-col">
+            <h4>Admin Portal</h4>
+            <a href="#">Platform Analytics</a>
+            <a href="#">Host New Event</a>
+            <a href="#">Attendee Roster Check-In</a>
+            <a href="#">Live Q&A Moderation</a>
+          </div>
+          <div class="footer-col">
+            <h4>Support</h4>
+            <a href="#">Help Center</a>
+            <a href="#">API Documentation</a>
+            <a href="#">Terms & Privacy</a>
+            <a href="#">Contact Support</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 EventPulse AI. Strict Manual Authentication System. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <!-- MODAL DIALOGS -->
+
+    <!-- 1. AUTHENTICATION (LOGIN / REGISTER) MODAL -->
+    <div class="modal-backdrop" id="authModal">
+      <div class="modal-container modal-medium">
+        <button class="modal-close" id="closeAuthModalBtn"><i data-lucide="x"></i></button>
+        <div class="modal-content">
+          
+          <div class="auth-header">
+            <div class="brand-icon" style="margin: 0 auto 0.75rem auto;">
+              <i data-lucide="lock"></i>
+            </div>
+            <h2 id="authModalTitle">Portal Authentication</h2>
+            <p id="authModalSub">Please enter your credentials to log in.</p>
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div id="authErrorAlert" class="auth-error-alert" style="display: none;">
+            <i data-lucide="alert-circle"></i>
+            <span id="authErrorMsg">Error message here</span>
+          </div>
+
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="tabLoginBtn">Log In</button>
+            <button class="auth-tab" id="tabRegisterBtn">Sign Up</button>
+          </div>
+
+          <!-- Login Form (Fresh Blank Inputs) -->
+          <form id="loginForm" class="auth-form">
+            <div class="form-group">
+              <label>Target Portal Role</label>
+              <select id="loginRoleSelect">
+                <option value="user">User (Attendee) Portal</option>
+                <option value="admin">Administrator Portal</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label id="loginUsernameLabel">Email Address / Username</label>
+              <input type="text" id="loginEmail" placeholder="Enter your email or username..." required />
+            </div>
+
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="loginPassword" placeholder="Enter your password..." required />
+            </div>
+
+            <button type="submit" class="btn-primary-gradient" style="width: 100%; justify-content: center; padding: 0.75rem;">
+              <i data-lucide="log-in"></i> Log In
+            </button>
+          </form>
+
+          <!-- Register Form -->
+          <form id="registerForm" class="auth-form" style="display: none;">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="regName" placeholder="Enter your full name..." required />
+            </div>
+
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input type="email" id="regEmail" placeholder="Enter your email..." required />
+            </div>
+
+            <div class="form-group">
+              <label>Password *</label>
+              <input type="password" id="regPassword" placeholder="Create a password..." required />
+            </div>
+
+            <button type="submit" class="btn-primary-gradient" style="width: 100%; justify-content: center; padding: 0.75rem;">
+              <i data-lucide="user-plus"></i> Create Account & Sign Up
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. EVENT DETAILS & BOOKING MODAL -->
+    <div class="modal-backdrop" id="eventModal">
+      <div class="modal-container modal-large">
+        <button class="modal-close" id="closeEventModalBtn"><i data-lucide="x"></i></button>
+        <div class="modal-content" id="eventModalContent">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. DIGITAL QR TICKET PASS MODAL -->
+    <div class="modal-backdrop" id="ticketModal">
+      <div class="modal-container modal-medium">
+        <button class="modal-close" id="closeTicketModalBtn"><i data-lucide="x"></i></button>
+        <div class="modal-content" id="ticketModalContent">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. HOST / CREATE EVENT MODAL -->
+    <div class="modal-backdrop" id="createEventModal">
+      <div class="modal-container modal-medium">
+        <button class="modal-close" id="closeCreateModalBtn"><i data-lucide="x"></i></button>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3><i data-lucide="sparkles"></i> Host New Event</h3>
+            <p>Publish a new event to thousands of attendees instantly.</p>
+          </div>
+          <form id="createEventForm" class="create-form">
+            <div class="form-group">
+              <label>Event Title *</label>
+              <input type="text" id="newEventTitle" placeholder="e.g. Next-Gen Web Design Summit 2026" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Category *</label>
+                <select id="newEventCategory" required>
+                  <option value="Tech & AI">Tech & AI</option>
+                  <option value="Design">Design</option>
+                  <option value="Business">Business</option>
+                  <option value="Web3 & Crypto">Web3 & Crypto</option>
+                  <option value="Entertainment">Music & Arts</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Format *</label>
+                <select id="newEventFormat" required>
+                  <option value="In-Person">In-Person</option>
+                  <option value="Virtual">Virtual</option>
+                  <option value="Hybrid">Hybrid</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Date & Time *</label>
+                <input type="text" id="newEventDate" placeholder="e.g. Sep 15, 2026 • 10:00 AM PST" required />
+              </div>
+              <div class="form-group">
+                <label>Ticket Price ($) *</label>
+                <input type="number" id="newEventPrice" placeholder="e.g. 79 (0 for Free)" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Location / Venue *</label>
+              <input type="text" id="newEventLocation" placeholder="e.g. Palace of Fine Arts, SF or Zoom HD" required />
+            </div>
+
+            <div class="form-group">
+              <label>Event Description</label>
+              <textarea id="newEventDesc" rows="3" placeholder="Describe key topics, keynotes, and attendee benefits..."></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn-secondary" id="cancelCreateBtn">Cancel</button>
+              <button type="submit" class="btn-primary-gradient"><i data-lucide="check-circle"></i> Publish Event</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. ADMIN EDIT EVENT MODAL -->
+    <div class="modal-backdrop" id="editEventModal">
+      <div class="modal-container modal-medium">
+        <button class="modal-close" id="closeEditModalBtn"><i data-lucide="x"></i></button>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3><i data-lucide="edit-3"></i> Admin: Edit Event</h3>
+            <p>Update event details, pricing, or venue information.</p>
+          </div>
+          <form id="editEventForm" class="create-form">
+            <input type="hidden" id="editEventId" />
+            <div class="form-group">
+              <label>Event Title *</label>
+              <input type="text" id="editEventTitle" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Category *</label>
+                <select id="editEventCategory" required>
+                  <option value="Tech & AI">Tech & AI</option>
+                  <option value="Design">Design</option>
+                  <option value="Business">Business</option>
+                  <option value="Web3 & Crypto">Web3 & Crypto</option>
+                  <option value="Entertainment">Music & Arts</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Format *</label>
+                <select id="editEventFormat" required>
+                  <option value="In-Person">In-Person</option>
+                  <option value="Virtual">Virtual</option>
+                  <option value="Hybrid">Hybrid</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Date & Time *</label>
+                <input type="text" id="editEventDate" required />
+              </div>
+              <div class="form-group">
+                <label>Ticket Price ($) *</label>
+                <input type="number" id="editEventPrice" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Location / Venue *</label>
+              <input type="text" id="editEventLocation" required />
+            </div>
+
+            <div class="form-group">
+              <label>Event Description</label>
+              <textarea id="editEventDesc" rows="3"></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn-secondary" id="cancelEditBtn">Cancel</button>
+              <button type="submit" class="btn-primary-gradient"><i data-lucide="save"></i> Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="toast-container"></div>
+
+  </div>
+
+  <!-- Main JavaScript App Entry -->
+  <script src="app.js"></script>
+</body>
+</html>

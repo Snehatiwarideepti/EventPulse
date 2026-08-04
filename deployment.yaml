@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventpulse-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eventpulse
+  template:
+    metadata:
+      labels:
+        app: eventpulse
+    spec:
+      containers:
+        - name: eventpulse
+          image: eventpulse-ai:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eventpulse-service
+spec:
+  selector:
+    app: eventpulse
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
