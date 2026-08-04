@@ -21,15 +21,17 @@ pipeline {
 
         stage('Smoke Test') {
             steps {
-              sh 'docker run -d -p 8081:80 --name eventpulse-jenkins eventpulse-ai:latest'
-              sh 'sleep 5'
-              sh 'curl -f http://localhost:8081/'
+                sh '''
+                    docker run -d --name eventpulse-jenkins eventpulse-ai:latest
+                    sleep 5
+                    docker exec eventpulse-jenkins curl -f http://localhost/
+                '''
             }
-          post {
-            always {
-              sh 'docker rm -f eventpulse-jenkins || true'
+            post {
+                always {
+                    sh 'docker rm -f eventpulse-jenkins || true'
+                }
             }
-          }
         }
 
         stage('Push Docker Image') {
