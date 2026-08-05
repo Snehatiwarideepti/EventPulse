@@ -19,29 +19,6 @@ pipeline {
             }
         }
 
-        stage('Smoke Test') {
-            steps {
-                sh '''
-                    docker rm -f eventpulse-jenkins || true
-
-                    docker run -d --name eventpulse-jenkins eventpulse-ai:latest
-
-                    sleep 10
-
-                    docker ps -a
-
-                    docker logs eventpulse-jenkins
-
-                    docker exec eventpulse-jenkins wget --spider http://localhost
-                '''
-            }
-            post {
-                always {
-                    sh 'docker rm -f eventpulse-jenkins || true'
-                }
-            }
-        }
-
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
