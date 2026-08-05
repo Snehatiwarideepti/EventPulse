@@ -25,7 +25,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                    kubectl apply -f deployment.yml
+                    kubectl apply -f deployment.yaml
                     kubectl rollout status deployment/eventpulse-deployment
                 '''
             }
