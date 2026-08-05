@@ -15,19 +15,10 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker tag eventpulse-ai:latest $IMAGE_NAME
-                        docker push $IMAGE_NAME
-                        docker logout
-                    '''
-                }
+                sh '''
+                    docker tag eventpulse-ai:latest $IMAGE_NAME
+                    docker push $IMAGE_NAME
+                '''
             }
         }
 
